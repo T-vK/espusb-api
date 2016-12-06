@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Minimal Websocket Example</title>
+    <script type="text/javascript" src="responding-ws.js"></script>
+    <script type="text/javascript" src="espusb-api.js"></script>
+  </head>
+  <body>
+    <button onclick="espusb.getEcho().then(res=>log)">espusb.getEcho</button><br>
+    <button onclick="espusb.getWifiInfo().then(res=>log)">espusb.getWifiInfo</button><br>
+    <button onclick="espusb.doWifiScan().then(res=>log)">espusb.doWifiScan</button><br>
+    <textarea id="res" rows="15"></textarea>
+    <script>
+    const resField = document.getElementById('res')
+
+    const HOST = location.host || '192.168.4.1'
+    const WS_URI = `ws://${HOST}/d/ws/issue`
+    const espusb = new EspusbApi(WS_URI)
+    
+    function log(msg) {
+        console.log(msg)
+        resField.value = `${resField.value}\n${msg}`
+    }
+    </script>
+  </body>
+</html>
+
