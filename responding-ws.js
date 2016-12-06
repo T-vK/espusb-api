@@ -12,8 +12,10 @@ class RespondingSocket {
     setUpSocket() {
         this.ws = new WebSocket(this.wsUri)
         this.ws.onmessage = (res) => {
-            this.currentMsgObj.resolver(res)
-            this.sendNextMessage()
+            if (res.data) { // filter out automatic ping responses
+                this.currentMsgObj.resolver(res)
+                this.sendNextMessage()
+            }
         }
         this.ws.onclose = () => {
             this.ready = false
