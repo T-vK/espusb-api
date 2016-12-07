@@ -6,9 +6,10 @@
     <script type="text/javascript" src="espusb-api.js"></script>
   </head>
   <body>
-    <button onclick="espusb.getEcho().then(res=>log)">espusb.getEcho</button><br>
-    <button onclick="espusb.getWifiInfo().then(res=>log)">espusb.getWifiInfo</button><br>
-    <button onclick="espusb.doWifiScan().then(res=>log)">espusb.doWifiScan</button><br>
+    <button onclick="espusb.echo().then(res=>log)">espusb.echo</button><br>
+    <button onclick="espusb.wifiGetInfo().then(res=>log)">espusb.wifiGetInfo</button><br>
+    <button onclick="espusb.wifiScan().then(res=>log)">espusb.wifiScan</button><br>
+    <button onclick="espusb.systemGetClock().then(res=>log)">espusb.systemGetClock</button><br>
     <textarea id="res" rows="15"></textarea>
     <script>
     const resField = document.getElementById('res')
