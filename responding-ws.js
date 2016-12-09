@@ -10,6 +10,7 @@ class RespondingSocket {
         this.setUpSocket()
     }
     setUpSocket() {
+        if (this.ws) {this.ws.close()}
         this.ws = new WebSocket(this.wsUri)
         this.ws.onmessage = (res) => {
             if (res.data) { // filter out automatic ping responses
@@ -23,8 +24,10 @@ class RespondingSocket {
         }
         this.ws.onopen = () => {
             this.ready = true
+            this.queueMessage('e') // TODO: get rid of this again
             this.sendNextMessage()
         }
+        this.ws.onerror = console.error
     }
     
     queueMessage(msg) {
@@ -43,5 +46,6 @@ class RespondingSocket {
             } else
                 this.currentMsgObj = {}
         }
+        this.queueMessage('wx') //FIXME: This seems to be required, but obviously causes massive traffic
     }
 }

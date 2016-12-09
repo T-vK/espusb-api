@@ -20,11 +20,69 @@ class EspusbApi extends RespondingSocket {
         this.MSG_BI = 'BI' // TODO: find out what exactly this is
         this.MSG_FLASH_BLA_PREFIX = 'FB' // TODO: find out what exactly this is
         this.MSG_FLASH_BLABLA_PREFIX = 'FX' // TODO: find out what exactly this is
+        this.MSG_ON_SEND_MSG = 'wx' // TODO: find out what the point of this is and why it's spammed to crazy
 
         this.MPFS_ADDRESS = 65536 //1048576 NOTE: If you select 1048576, it will override the 65536 sector, but has much more room.
         this.FLASH_SCRATCHPAD_ADDRESS = 524288
         this.FLASH_BLOCK_SIZE = 65536
         this.FLASH_SEND_SIZE = 256
+        
+        // -- HID ---
+        this.MSG_KEYBOARD_PREFIX = 'CK'
+        this.MSG_KEYBOARD_DIVIDER = '\t'
+        this.MSG_KEYBOARD_RESPONSE = 'CK'
+        this.KEYS = {
+            'RELEASE': 0,
+            'ENTER': 40,
+            'CAPSLOCK': 57,
+            'MUTE': 127,
+            'a': 4,
+            'b': 5,
+            'c': 6,
+            'd': 7,
+            'e': 8,
+            'f': 9,
+            'g': 10,
+            'h': 11,
+            'i': 12,
+            'j': 13,
+            'k': 14,
+            'l': 15,
+            'm': 16,
+            'n': 17,
+            'o': 18,
+            'p': 19,
+            'q': 20,
+            'r': 21,
+            's': 22,
+            't': 23,
+            'u': 24,
+            'v': 25,
+            'w': 26,
+            'x': 27,
+            'y': 28,
+            'z': 29
+        }
+        this.KEYS_MODIFIER = {
+            'NONE': 0,
+            'WIN': 8,
+            'CTRL': 224,
+            'SHIFT': 225,
+            'ALT': 226
+        }
+    }
+    keyboardAction(key,modifier='NONE') {
+        return super.queueMessage(`${this.MSG_KEYBOARD_PREFIX}${this.KEYS_MODIFIER[modifier]}${this.MSG_KEYBOARD_DIVIDER}${this.KEYS[key]}`).then(res=> {
+            return (res.data == this.MSG_KEYBOARD_RESPONSE)
+        })
+    }
+    keyboardReleaseKeys() { // apparantly we can only release all keys or none...
+        return this.keyboardAction('RELEASE','NONE')
+    }
+    customCommand(msg) {
+        return super.queueMessage(msg).then(res=> {
+            return res.data
+        })
     }
     //TODO: parse res.data to provide clean return values
     echo() {

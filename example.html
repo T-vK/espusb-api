@@ -6,10 +6,10 @@
     <script type="text/javascript" src="espusb-api.js"></script>
   </head>
   <body>
-    <button onclick="espusb.echo().then(res=>log)">espusb.echo</button><br>
-    <button onclick="espusb.wifiGetInfo().then(res=>log)">espusb.wifiGetInfo</button><br>
-    <button onclick="espusb.wifiScan().then(res=>log)">espusb.wifiScan</button><br>
-    <button onclick="espusb.systemGetClock().then(res=>log)">espusb.systemGetClock</button><br>
+    <button onclick="espusb.echo().then(log)">espusb.echo</button><br>
+    <button onclick="espusb.wifiGetInfo().then(log)">espusb.wifiGetInfo</button><br>
+    <button onclick="espusb.wifiScan().then(log)">espusb.wifiScan</button><br>
+    <button onclick="espusb.systemGetClock().then(log)">espusb.systemGetClock</button><br>
     <textarea id="res" rows="15"></textarea>
     <script>
     const resField = document.getElementById('res')
@@ -22,6 +22,60 @@
         console.log(msg)
         resField.value = `${resField.value}\n${msg}`
     }
+    
+/*
+    // Send Win+r, cmd, Enter (would open a command line on a windows device)
+    espusb.keyboardAction('r','WIN').then(()=> {
+        return espusb.keyboardReleaseKeys()
+    }).then(()=> {
+        return espusb.keyboardAction('c')
+    }).then(()=> {
+        return espusb.keyboardReleaseKeys()
+    }).then(()=> {
+        return espusb.keyboardAction('m')
+    }).then(()=> {
+        return espusb.keyboardReleaseKeys()
+    }).then(()=> {
+        return espusb.keyboardAction('d')
+    }).then(()=> {
+        return espusb.keyboardReleaseKeys()
+    }).then(()=> {
+        return espusb.keyboardAction('ENTER')
+    }).then(()=> {
+        return espusb.keyboardReleaseKeys()
+    }).then(log)
+ */    
+
+/*
+function delay(millis) { // <-- For testing purposes only!! 
+    var now = Date.now();
+    while(Date.now() < now + millis){} 
+}
+QueueOperation( 'CK8\t0' ); 
+delay(10)
+QueueOperation( 'CK8\t21' ); 
+delay(10)
+QueueOperation( 'CK8\t0' ); 
+delay(10)
+QueueOperation( 'CK0\t0' );  // win+r
+delay(100)
+QueueOperation( 'CK0\t6' ); 
+delay(10)
+QueueOperation( 'CK0\t0' ); 
+delay(10)
+QueueOperation( 'CK0\t16' ); 
+delay(10)
+QueueOperation( 'CK0\t0' ); 
+delay(10)
+QueueOperation( 'CK0\t7' ); 
+delay(10)
+QueueOperation( 'CK0\t0' ); // cmd
+delay(100)
+QueueOperation( 'CK0\t40' ); // Enter
+delay(20)
+QueueOperation( 'CK0\t0' ); 
+*/
+
     </script>
   </body>
 </html>
