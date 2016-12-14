@@ -1,6 +1,9 @@
 class EspusbApi extends RespondingSocket {
     constructor(wsUri=`ws://${location.host}/d/ws/issue`) {
         super(wsUri)
+        super.onopen = this.onopen
+        super.onopen = this.onclose
+        super.onopen = this.onerror
         this.MSG_ECHO = 'e'
         this.MSG_WIFI_INFORMATION = 'WI'
         this.MSG_WIFI_SCAN = 'WS'
@@ -31,11 +34,10 @@ class EspusbApi extends RespondingSocket {
         this.MSG_KEYBOARD_PREFIX = 'CK'
         this.MSG_KEYBOARD_DIVIDER = '\t'
         this.MSG_KEYBOARD_RESPONSE = 'CK'
-        this.KEYS = {
-            'RELEASE': 0,
-            'ENTER': 40,
-            'CAPSLOCK': 57,
-            'MUTE': 127,
+        // TODO: make this more general using usage codes and define different keyboard layouts
+        // Usage codes and their translations are found at http://www.usb.org/developers/hidpage/Hut1_12v2.pdf page 53
+        this.KEYS = { //INFO: This is for the German qwertz-keyboard layout
+            'NONE': 0,
             'a': 4,
             'b': 5,
             'c': 6,
@@ -60,24 +62,101 @@ class EspusbApi extends RespondingSocket {
             'v': 25,
             'w': 26,
             'x': 27,
-            'y': 28,
-            'z': 29
+            'z': 28,
+            'y': 29, 
+            '1': 30,
+            '2': 31,
+            '3': 32,
+            '4': 33,
+            '5': 34,
+            '6': 35,
+            '7': 36,
+            '8': 37,
+            '9': 38,
+            '10': 39,
+            'ENTER': 40,
+            'Esc': 41,
+            ' ': 44, //Space
+            'ß': 45,
+            '´': 46,
+            'ü': 47,
+            '+': 48,
+            '#': 49,
+            '#': 50,
+            'ö': 51,
+            'ä': 52,
+            '^': 53,
+            ',': 54,
+            '.': 55,
+            '-': 56,
+            'CAPSLOCK': 57, //TODO: confirm this
+            'F1': 58,
+            'F2': 59,
+            'F3': 60,
+            'F4': 61,
+            'F5': 62,
+            'F6': 63,
+            'F7': 64,
+            'F8': 65,
+            'F9': 66,
+            'F10': 67,
+            'F11': 68,
+            'F12': 69,
+            'Prnt': 70, //TODO: confirm this
+            'Pause': 72,
+            'Home': 74,
+            'PgUp': 75,
+            'Del': 76,
+            'End': 77,
+            'PgDn': 78,
+            'Right': 79,
+            'Left': 80,
+            'Down': 81,
+            'Up': 82,
+            'VolUp': 128,
+            'VolDn': 129
         }
         this.KEYS_MODIFIER = {
             'NONE': 0,
+            'CTRL': 1,
+            'SHIFT': 2,
+            'CTRL+SHIFT': 3,
+            'ALT': 4,
+            'CTRL+ALT': 5,
+            'SHIFT+ALT': 6,
+            'CTRL+SHIFT+ALT': 7,
             'WIN': 8,
-            'CTRL': 224,
-            'SHIFT': 225,
-            'ALT': 226
+            'CTRL+WIN': 9,
+            'SHIFT+WIN': 10,
+            'CTRL+ALT+WIN': 11,
+            'ALT+WIN': 12,
+            'CTRL+ALT+WIN': 13,
+            'SHIFT+ALT+WIN': 14,
+            'CTRL+SHIFT+ALT+WIN': 15,
         }
+        
+        this.MSG_MOUSE_PREFIX = 'CM'
+        this.MSG_MOUSE_DIVIDER = '\t'
+        this.MSG_MOUSE_RESPONSE = 'CM'
+        this.MOUSE_KEYS = {
+            'LEFT': 1,
+            'RIGHT': 2,
+            'MIDDLE': 4
+        } //Example: 'CK1\t0\t1' - Left down, Middle Up, Right Down
+        //TODO: mouse movement
     }
-    keyboardAction(key,modifier='NONE') {
-        return super.queueMessage(`${this.MSG_KEYBOARD_PREFIX}${this.KEYS_MODIFIER[modifier]}${this.MSG_KEYBOARD_DIVIDER}${this.KEYS[key]}`).then(res=> {
+    onopen(){}
+    onclose(){}
+    onerror(){}
+    
+    keyboardAction(key='NONE',modifiers='NONE') {
+        console.log(`${this.MSG_KEYBOARD_PREFIX}${this.KEYS_MODIFIER[modifiers]}${this.MSG_KEYBOARD_DIVIDER}${this.KEYS[key]}`)
+        return super.queueMessage(`${this.MSG_KEYBOARD_PREFIX}${this.KEYS_MODIFIER[modifiers]}${this.MSG_KEYBOARD_DIVIDER}${this.KEYS[key]}`).then(res=> {
             return (res.data == this.MSG_KEYBOARD_RESPONSE)
         })
     }
     keyboardReleaseKeys() { // apparantly we can only release all keys or none...
-        return this.keyboardAction('RELEASE','NONE')
+        return this.keyboardAction('NONE','NONE')
     }
     customCommand(msg) {
         return super.queueMessage(msg).then(res=> {

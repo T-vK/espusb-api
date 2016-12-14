@@ -19,15 +19,20 @@ class RespondingSocket {
             }
         }
         this.ws.onclose = () => {
+            if (this.onclose) {this.onclose()}
             this.ready = false
             this.setUpSocket()
         }
         this.ws.onopen = () => {
+            if (this.onopen) {this.onopen()}
             this.ready = true
             this.queueMessage('e') // TODO: get rid of this again
             this.sendNextMessage()
         }
-        this.ws.onerror = console.error
+        this.ws.onerror = (err) => {
+            if (this.onerror) {this.onerror(err)}
+            console.error(err)
+        }
     }
     
     queueMessage(msg) {
